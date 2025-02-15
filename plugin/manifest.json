@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "Subtitle Snatcher",
+    "version": "1.0",
+    "description": "Automatically copy subtitles when pressing Ctrl+C in Netflix and YouTube",
+    "icons": {
+        "128": "logo.png"
+    },
+    "permissions": [
+        "clipboardWrite",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://*.netflix.com/*",
+        "https://*.youtube.com/*"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": "logo.png"
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://*.netflix.com/*", "*://*.youtube.com/*"],
+            "js": ["content.js"]
+        }
+    ]
+}
