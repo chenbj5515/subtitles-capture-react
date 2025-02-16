@@ -4,12 +4,12 @@ export default function UsageGuide() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Usage Guide</CardTitle>
+        <CardTitle className="text-lg">Usage Guide</CardTitle>
         <CardDescription>Keyboard shortcuts for the extension</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold mb-2">Ctrl+C:</h3>
+          <h3 className="text-[16px] font-semibold mb-2">Ctrl+C:</h3>
           <p className="text-muted-foreground">
             For Netflix: Open subtitles and press Ctrl+C to copy the current subtitle.
           </p>
@@ -19,7 +19,7 @@ export default function UsageGuide() {
           </p>
         </div>
         <div>
-          <h3 className="text-lg font-semibold mb-2">Ctrl+R:</h3>
+          <h3 className="text-[16px] font-semibold mb-2">Ctrl+R:</h3>
           <p className="text-muted-foreground">Replay the video segment corresponding to the last copied subtitle.</p>
         </div>
       </CardContent>

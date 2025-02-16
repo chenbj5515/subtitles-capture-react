@@ -8,19 +8,48 @@ export default function AuthForm() {
   const [isLoading, setIsLoading] = useState(false)
 
   async function onGitHubSignIn() {
-    setIsLoading(true)
-    // Add your GitHub authentication logic here
-    setTimeout(() => {
+    try {
+      setIsLoading(true)
+      const response = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/github/login", {
+        credentials: "include"
+      })
+      if (!response.ok) {
+        throw new Error("获取 GitHub 登录链接失败")
+      }
+      const data = await response.json()
+      window.open(data.authUrl, "_blank")
+    } catch (error) {
+      console.error("GitHub 登录错误：", error)
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   async function onGoogleSignIn() {
-    setIsLoading(true)
-    // Add your Google authentication logic here
-    setTimeout(() => {
+    // try {
+    //   setIsLoading(true)
+    //   // 在新的 tab 中打开 auth.html
+    //   window.open("https://japanese-memory-auth.chenbj55150220.workers.dev", "_blank")
+    // } catch (error) {
+    //   console.error("打开 auth.html 错误：", error)
+    // } finally {
+    //   setIsLoading(false)
+    // }
+    try {
+      setIsLoading(true)
+      const response = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/google/login", {
+        credentials: "include"
+      })
+      if (!response.ok) {
+        throw new Error("获取 Google 登录链接失败")
+      }
+      const data = await response.json()
+      window.open(data.authUrl, "_blank")
+    } catch (error) {
+      console.error("Google 登录错误：", error)
+    } finally {
       setIsLoading(false)
-    }, 3000)
+    }
   }
 
   return (

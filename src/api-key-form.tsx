@@ -52,7 +52,7 @@ export default function ApiKeyForm() {
       </form>
 
       <Alert>
-        <AlertDescription>Please keep your API Key safe and do not share it with others.</AlertDescription>
+        <AlertDescription className="text-muted-foreground">Please keep your API Key safe and do not share it with others.</AlertDescription>
       </Alert>
     </div>
   )
