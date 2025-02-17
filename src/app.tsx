@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [hasStoredApiKey, setHasStoredApiKey] = useState(false)
+  const [storedApiKey, setStoredApiKey] = useState("")  // 新增状态来存储 API key
 
   console.log(user, "user================")
   // 请求 /api/user/info 接口，获取用户信息
@@ -47,10 +48,12 @@ export default function SettingsPage() {
       })
   }, [])
 
-  // 检查 chrome storage 中是否存在 API key
+  // 修改检查 chrome storage 的 useEffect
   useEffect(() => {
     chrome.storage.local.get(['openai_api_key'], (result) => {
+      console.log(result, "result================")
       setHasStoredApiKey(!!result.openai_api_key)
+      setStoredApiKey(result.openai_api_key || "") // 保存 API key 的值
     })
   }, [])
 
@@ -147,7 +150,7 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ApiKeyForm />
+                <ApiKeyForm initialApiKey={storedApiKey} onSaved={() => window.location.reload()} />
               </CardContent>
             </Card>
           </div>
@@ -179,7 +182,7 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ApiKeyForm />
+                  <ApiKeyForm initialApiKey={storedApiKey} onSaved={() => window.location.reload()} />
                 </CardContent>
               </Card>
             </div>
@@ -190,11 +193,11 @@ export default function SettingsPage() {
       {/* 没有用户但有存储的 API key 时的视图 */}
       {!loading && !user && hasStoredApiKey && (
         <>
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center">
             <Button
               variant="outline"
               size="lg"
-              className="w-full text-white bg-black hover:bg-black/90"
+              className="w-[240px] text-white hover:text-white bg-black hover:bg-black/90"
               onClick={() => {
                 window.location.href = "https://japanese-memory-auth.chenbj55150220.workers.dev/auth/github"
               }}
@@ -203,24 +206,24 @@ export default function SettingsPage() {
             </Button>
           </div>
 
-          <Card className="relative hover:border-primary transition-colors mb-8">
+          <UsageGuide />
+
+          <Card className="mt-8">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Key className="h-6 w-6" />
                 <CardTitle className="text-lg">Use API Key</CardTitle>
               </div>
               <CardDescription>
-                你已经设置了OpenAI API key
+                You have already set up your OpenAI API key
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ApiKeyForm />
+              <ApiKeyForm initialApiKey={storedApiKey} onSaved={() => window.location.reload()} />
             </CardContent>
           </Card>
         </>
       )}
-
-      <UsageGuide />
     </div>
   )
 }

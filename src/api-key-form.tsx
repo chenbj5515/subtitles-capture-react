@@ -5,21 +5,30 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Icons } from "@/components/icons"
 
-export default function ApiKeyForm() {
+export default function ApiKeyForm({
+  initialApiKey = "",
+  onSaved
+}: {
+  initialApiKey: string
+  onSaved?: () => void
+}) {
   const [isLoading, setIsLoading] = useState(false)
-  const [apiKey, setApiKey] = useState("")
+  const [apiKey, setApiKey] = useState(initialApiKey)
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault()
     setIsLoading(true)
 
-    // Add your API key saving logic here
-    setTimeout(() => {
+    try {
+      await chrome.storage.local.set({ openai_api_key: apiKey })
       setIsLoading(false)
-    }, 2000)
+      onSaved?.()  // 调用保存成功的回调函数
+    } catch (error) {
+      console.error('保存API Key失败:', error)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -50,10 +59,10 @@ export default function ApiKeyForm() {
           Save Settings
         </Button>
       </form>
-
+      {/* 
       <Alert>
         <AlertDescription className="text-muted-foreground">Please keep your API Key safe and do not share it with others.</AlertDescription>
-      </Alert>
+      </Alert> */}
     </div>
   )
 }
