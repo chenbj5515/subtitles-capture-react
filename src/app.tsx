@@ -161,31 +161,58 @@ export default function SettingsPage() {
       {!loading && user && user.user_id && (
         <>
           {user.current_plan !== null ? null : (
-            // 免费用户（已登录但未订阅）：用订阅引导视图替换 Sign in，保持 Use API Key 不变
-            <div className="grid md:grid-cols-2 gap-6 mb-8 relative">
-              <h1 className="text-2xl font-bold mb-2">Missing OpenAI API Key</h1>
-              <SubscriptionPrompt />
+            <>
+              {hasStoredApiKey ? (
+                // 已登录且设置了API KEY的情况
+                <>
+                  <UsageGuide />
 
-              {/* 移动端水平 OR 分隔符 */}
-              <div className="md:hidden flex items-center justify-center">
-                <div className="bg-background px-4 py-2 rounded-full text-sm border">OR</div>
-              </div>
+                  <Card className="mt-8">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <Key className="h-6 w-6" />
+                        <CardTitle className="text-lg">Use API Key</CardTitle>
+                      </div>
+                      <CardDescription>
+                        You have already set up your OpenAI API key
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ApiKeyForm initialApiKey={storedApiKey} onSaved={() => window.location.reload()} />
+                    </CardContent>
+                  </Card>
 
-              <Card className="relative hover:border-primary transition-colors">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Key className="h-6 w-6" />
-                    <CardTitle className="text-lg">Use API Key</CardTitle>
+                  <div className="mt-8">
+                    <SubscriptionPrompt apiKeySetted/>
                   </div>
-                  <CardDescription>
-                    Provide your own OpenAI API key to use the extension without an account
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ApiKeyForm initialApiKey={storedApiKey} onSaved={() => window.location.reload()} />
-                </CardContent>
-              </Card>
-            </div>
+                </>
+              ) : (
+                // 原有的免费用户视图（已登录但未设置API KEY）
+                <div className="grid md:grid-cols-2 gap-6 mb-8 relative">
+                  <SubscriptionPrompt />
+
+                  {/* 移动端水平 OR 分隔符 */}
+                  <div className="md:hidden flex items-center justify-center">
+                    <div className="bg-background px-4 py-2 rounded-full text-sm border">OR</div>
+                  </div>
+
+                  <Card className="relative hover:border-primary transition-colors">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <Key className="h-6 w-6" />
+                        <CardTitle className="text-lg">Use API Key</CardTitle>
+                      </div>
+                      <CardDescription>
+                        Provide your own OpenAI API key to use the extension without an account
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ApiKeyForm initialApiKey={storedApiKey} onSaved={() => window.location.reload()} />
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
@@ -193,19 +220,6 @@ export default function SettingsPage() {
       {/* 没有用户但有存储的 API key 时的视图 */}
       {!loading && !user && hasStoredApiKey && (
         <>
-          <div className="mb-6 flex justify-center">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-[240px] text-white hover:text-white bg-black hover:bg-black/90"
-              onClick={() => {
-                window.location.href = "https://japanese-memory-auth.chenbj55150220.workers.dev/auth/github"
-              }}
-            >
-              Sign in
-            </Button>
-          </div>
-
           <UsageGuide />
 
           <Card className="mt-8">
@@ -220,6 +234,21 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <ApiKeyForm initialApiKey={storedApiKey} onSaved={() => window.location.reload()} />
+            </CardContent>
+          </Card>
+
+          <Card className="mt-[28px] relative transition-colors">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <UserCircle className="h-6 w-6" />
+                <CardTitle className="text-xl">Sign in</CardTitle>
+              </div>
+              <CardDescription>
+                Sign in with GitHub or Google to access premium features without an API key
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AuthForm />
             </CardContent>
           </Card>
         </>

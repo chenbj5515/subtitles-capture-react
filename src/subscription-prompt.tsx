@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, Star } from "lucide-react"
 
-export default function SubscriptionPrompt() {
+export default function SubscriptionPrompt(props: {apiKeySetted?: boolean}) {
+    const { apiKeySetted } = props;
     return (
-        <Card className="hover:border-primary transition-colors">
+        <Card className={`${apiKeySetted ? "hover:border-primary" : ""} transition-colors`}>
             <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                     <Star className="h-6 w-6" />
