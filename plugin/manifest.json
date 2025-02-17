@@ -14,7 +14,7 @@
         "tabs"
     ],
     "background": {
-        "service_worker": "./background.js"
+        "service_worker": "background.js"
     },
     "host_permissions": [
         "https://*.netflix.com/*",

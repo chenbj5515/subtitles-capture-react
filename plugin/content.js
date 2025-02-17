@@ -118,52 +118,29 @@ if (isNetflix) {
     setInterval(checkSubtitle, 500);
 }
 
-async function extractSubtitlesFromImage(imageBlob) {
-    // 获取API Key
-    const { openaiApiKey } = await chrome.storage.sync.get(['openaiApiKey']);
-    
-    if (!openaiApiKey) {
-        showNotification('No API Key found');
-        throw new Error('No API Key found');
+async function extractSubtitlesFromImage(imageData) {
+    // const base64Image = await new Promise((resolve) => {
+    //     const reader = new FileReader();
+    //     reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    //     reader.readAsDataURL(imageBlob);
+    // });
+    console.log('imageBlob:', chrome.runtime, imageData);
+
+    // 发送消息给 background.js 处理 OpenAI 请求
+    const response = await chrome.runtime.sendMessage({
+        type: "EXTRACT_SUBTITLES",
+        data: {
+            imageData
+            // base64Image: base64Image
+        }
+    });
+
+    if (response.error) {
+        showNotification(response.error);
+        throw new Error(response.error);
     }
 
-    const base64Image = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(imageBlob);
-    });
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openaiApiKey}`
-        },
-        body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "text",
-                            text: "Please only recognize and output the Japanese subtitle text at the bottom of the image, do not output any other content. If no subtitles are found, please return an empty string."
-                        },
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: `data:image/png;base64,${base64Image}`
-                            }
-                        }
-                    ]
-                }
-            ],
-            max_tokens: 100
-        })
-    });
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
+    return response.result || '';
 }
 
 async function captureYoutubeSubtitle() {
@@ -191,7 +168,13 @@ async function captureYoutubeSubtitle() {
             try {
                 isRequestInProgress = true; // 标记请求开始
                 showNotification('Reading current subtitles...', true);
-                const subtitleText = await extractSubtitlesFromImage(blob);
+                // const formData = new FormData();
+                // formData.append('image', blob, 'image.png');
+                const arrayBuffer = await blob.arrayBuffer();
+                const imageData = Array.from(new Uint8Array(arrayBuffer))  // 转换为普通数组以便传递
+
+                const subtitleText = await extractSubtitlesFromImage(imageData);
+                console.log('subtitleText:', subtitleText);
                 if (subtitleText) {
                     const currentTime = video.currentTime - 2;
                     const currentUrl = new URL(window.location.href);

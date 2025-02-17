@@ -19,6 +19,7 @@ export default function SettingsPage() {
   // 保存用户信息，若无法获取则为 null
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [hasStoredApiKey, setHasStoredApiKey] = useState(false)
 
   console.log(user, "user================")
   // 请求 /api/user/info 接口，获取用户信息
@@ -46,15 +47,28 @@ export default function SettingsPage() {
       })
   }, [])
 
+  // 检查 chrome storage 中是否存在 API key
+  useEffect(() => {
+    chrome.storage.local.get(['openai_api_key'], (result) => {
+      setHasStoredApiKey(!!result.openai_api_key)
+    })
+  }, [])
+
   // 点击"订阅引导"时，打开新的 tab 访问订阅引导页（替换下面的 URL）
-  const handleSubscribeGuide = () => {
-    window.open("https://your-subscription-guide-url.com", "_blank")
-  }
+  // const handleSubscribeGuide = () => {
+  //   window.open("https://your-subscription-guide-url.com", "_blank")
+  // }
 
   // TODO: 订阅引导页
   // TODO: 无账号时自动注册？
   // TODO: 订阅用户的 API Key 管理
-  // TODO: 自带API Key管理
+  // content和background通信，在background发起服务器API的请求，在服务器发起对OPENAI API的请求。
+  // 看起来很复杂但必须这样做，因为跨域配置只允许了插件后台的域，而content的域是和当前所在网页有关的，不能和服务器直接通信。
+  // 因此必须和background通信后让background发起对服务器的请求。还有因为background也是可以通过开发者工具看到请求的，而付费用户是用的我的API KEY，所以显然也不能在这里发送OPENAI的请求
+  // 所以background这里只能发送对我的API的请求，我的API那里发送对OPENAI的请求，这样才能保证API KEY不被泄露。
+  // 不过这个架构下有个需要注意的点是图片的格式如何正确地传递，首先要保证传递到background时信息不会丢失，这需要先把blob转成数组传递才能保证不丢失信息，然后在background里把数组转成formData后传给后端。这样似乎才是传递图片信息的最佳实践。
+  // TODO: 用户提供的API Key管理
+  // 这个情况我想就直接明文存储和通信了，因为本来就是用户提供的，可以被开发者工具看到也问题不大，用户的设备的安全性让用户自己负责就可以了。
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -89,7 +103,7 @@ export default function SettingsPage() {
       )}
 
       {/* 没有获取到用户信息（未登录）时，展示原有的 Sign in 和 Use API Key 选项 */}
-      {!loading && !user && (
+      {!loading && !user && !hasStoredApiKey && (
         <>
           <h1 className="text-2xl font-bold mb-6">Missing OpenAI API Key</h1>
           <div className="text-[16px] text-muted-foreground mb-5">
@@ -170,6 +184,39 @@ export default function SettingsPage() {
               </Card>
             </div>
           )}
+        </>
+      )}
+
+      {/* 没有用户但有存储的 API key 时的视图 */}
+      {!loading && !user && hasStoredApiKey && (
+        <>
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full text-white bg-black hover:bg-black/90"
+              onClick={() => {
+                window.location.href = "https://japanese-memory-auth.chenbj55150220.workers.dev/auth/github"
+              }}
+            >
+              Sign in
+            </Button>
+          </div>
+
+          <Card className="relative hover:border-primary transition-colors mb-8">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Key className="h-6 w-6" />
+                <CardTitle className="text-lg">Use API Key</CardTitle>
+              </div>
+              <CardDescription>
+                你已经设置了OpenAI API key
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ApiKeyForm />
+            </CardContent>
+          </Card>
         </>
       )}
 
