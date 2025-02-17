@@ -119,19 +119,58 @@ if (isNetflix) {
 }
 
 async function extractSubtitlesFromImage(imageData) {
-    // const base64Image = await new Promise((resolve) => {
-    //     const reader = new FileReader();
-    //     reader.onloadend = () => resolve(reader.result.split(',')[1]);
-    //     reader.readAsDataURL(imageBlob);
-    // });
-    console.log('imageBlob:', chrome.runtime, imageData);
+    try {
+        const result = await chrome.storage.local.get(['openai_api_key']);
+        console.log('result:', result);
+        if (result.openai_api_key) {
+            // 修改图片数据的处理方式
+            const base64Image = arrayBufferToBase64(imageData);
+            
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${result.openai_api_key}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                {
+                                    type: "text",
+                                    text: "Please extract any subtitles or captions from this image. Only return the text content, nothing else."
+                                },
+                                {
+                                    type: "image_url",
+                                    image_url: {
+                                        url: `data:image/jpeg;base64,${base64Image}`
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    max_tokens: 1500
+                })
+            });
 
-    // 发送消息给 background.js 处理 OpenAI 请求
+            if (!response.ok) {
+                throw new Error('OpenAI API request failed');
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content.trim();
+        }
+    } catch (error) {
+        console.error('Error accessing OpenAI API directly:', error);
+    }
+
+    // 如果没有 API key 或直接请求失败，回退到通过 background.js 处理
     const response = await chrome.runtime.sendMessage({
         type: "EXTRACT_SUBTITLES",
         data: {
             imageData
-            // base64Image: base64Image
         }
     });
 
@@ -141,6 +180,17 @@ async function extractSubtitlesFromImage(imageData) {
     }
 
     return response.result || '';
+}
+
+// 添加一个新的辅助函数来安全地转换 ArrayBuffer 到 base64
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
 }
 
 async function captureYoutubeSubtitle() {
@@ -168,8 +218,6 @@ async function captureYoutubeSubtitle() {
             try {
                 isRequestInProgress = true; // 标记请求开始
                 showNotification('Reading current subtitles...', true);
-                // const formData = new FormData();
-                // formData.append('image', blob, 'image.png');
                 const arrayBuffer = await blob.arrayBuffer();
                 const imageData = Array.from(new Uint8Array(arrayBuffer))  // 转换为普通数组以便传递
 

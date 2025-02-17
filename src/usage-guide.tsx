@@ -9,7 +9,8 @@ export default function UsageGuide() {
           <BookOpen className="h-6 w-6" />
           <CardTitle className="text-lg">Usage Guide</CardTitle>
         </div>
-        <CardDescription>Keyboard shortcuts for the extension</CardDescription>
+        <CardDescription>Use these keyboard shortcuts to capture subtitles on YouTube or Netflix.</CardDescription>
+        <CardDescription>For best results, paste the subtitles into my <a href="https://japanese-memory-rsc.vercel.app/" target="_blank" className="underline underline-offset-4 hover:text-primary">Japanese Learning Website</a>.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
