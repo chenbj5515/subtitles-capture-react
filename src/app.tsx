@@ -160,7 +160,7 @@ export default function SettingsPage() {
       {/* 当能获取到用户信息时，根据 current_plan 字段展示对应的内容 */}
       {!loading && user && user.user_id && (
         <>
-          {user.current_plan !== null ? null : (
+          {user.current_plan !== null ? <UsageGuide /> : (
             <>
               {hasStoredApiKey ? (
                 // 已登录且设置了API KEY的情况

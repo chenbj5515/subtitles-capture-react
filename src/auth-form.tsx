@@ -10,8 +10,22 @@ export default function AuthForm() {
   async function onGitHubSignIn() {
     try {
       setIsLoading(true)
-      const response = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/github/login", {
+      
+      // 获取 CSRF token
+      const tokenResponse = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/csrf-token", {
         credentials: "include"
+      })
+      if (!tokenResponse.ok) {
+        throw new Error("获取 CSRF token 失败")
+      }
+      const { csrf_token } = await tokenResponse.json()
+
+      // 请求 GitHub 登录链接
+      const response = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/github/login", {
+        credentials: "include",
+        headers: {
+          'X-CSRF-Token': csrf_token
+        }
       })
       if (!response.ok) {
         throw new Error("获取 GitHub 登录链接失败")
@@ -26,19 +40,23 @@ export default function AuthForm() {
   }
 
   async function onGoogleSignIn() {
-    // try {
-    //   setIsLoading(true)
-    //   // 在新的 tab 中打开 auth.html
-    //   window.open("https://japanese-memory-auth.chenbj55150220.workers.dev", "_blank")
-    // } catch (error) {
-    //   console.error("打开 auth.html 错误：", error)
-    // } finally {
-    //   setIsLoading(false)
-    // }
     try {
       setIsLoading(true)
-      const response = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/google/login", {
+      // 获取 CSRF token
+      const tokenResponse = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/csrf-token", {
         credentials: "include"
+      })
+      if (!tokenResponse.ok) {
+        throw new Error("获取 CSRF token 失败")
+      }
+      const { csrf_token } = await tokenResponse.json()
+
+      // 请求 Google 登录链接
+      const response = await fetch("https://japanese-memory-auth.chenbj55150220.workers.dev/auth/google/login", {
+        credentials: "include",
+        headers: {
+          'X-CSRF-Token': csrf_token
+        }
       })
       if (!response.ok) {
         throw new Error("获取 Google 登录链接失败")
